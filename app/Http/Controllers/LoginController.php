@@ -34,4 +34,15 @@ class LoginController extends Controller
             return redirect()->back()->with('error', 'Something Went Wrong! ', $e->getMessage());
         }
     }
+
+    public function logout(Request $request)
+    {
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect('/login')->with('success', 'Logged out successfully.');
+    }
 }

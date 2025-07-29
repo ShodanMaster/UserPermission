@@ -9,6 +9,9 @@ Route::post('login-in', [LoginController::class, 'loginIn'])->name('loginin');
 
 Route::middleware('auth')->group(function(){
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
 });
 
 Route::get('/', function () {

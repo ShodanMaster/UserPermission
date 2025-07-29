@@ -27,7 +27,7 @@
                 </a>
             </li>
         </ul>
-        <form action="" class="d-flex mt-3" method="POST">
+        <form action="{{route('logout')}}" class="d-flex mt-3" method="POST">
             @csrf
           <button class="btn btn-outline-danger" type="submit">Logout</button>
         </form>
