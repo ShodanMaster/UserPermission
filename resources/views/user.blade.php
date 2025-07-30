@@ -26,7 +26,12 @@
                         <div class="col-md-6 form-group">
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                            <div class="form-check mt-1">
+                                <input type="checkbox" class="form-check-input" id="show-password" onchange="togglePassword('password')">
+                                <label class="form-check-label" for="show-password">Show Password</label>
+                            </div>
                         </div>
+
                         <div class="col-md-6 form-group">
                             <label for="confirm_password" class="form-label">Confirm Password</label>
                             <input type="password" class="form-control" id="confirm_password" name="password_confirmation" placeholder="Confirm Password" required>
@@ -42,6 +47,58 @@
     </div>
 </div>
 
+<!--Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="editUserModalLabel">Edit User</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editUserForm">
+                <input type="hidden" id="edit-id" name="id">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6 form-group">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="edit-name" name="name" placeholder="Enter Full Name" required>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label for="username" class="form-label">User Name</label>
+                            <input type="text" class="form-control" id="edit-username" name="username" placeholder="Enter Username" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12 form-group mb-2">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="enable-password" onchange="toggleEditPasswordFields()">
+                                <label class="form-check-label" for="enable-password">Change Password</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 form-group">
+                            <label for="edit-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="edit-password" name="password" placeholder="Password" disabled>
+                            <div class="form-check mt-1">
+                                <input type="checkbox" class="form-check-input" id="show-edit-password" onchange="togglePassword('edit-password')" disabled>
+                                <label class="form-check-label" for="show-edit-password">Show Password</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 form-group">
+                            <label for="edit-confirm_password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="edit-confirm_password" name="password_confirmation" placeholder="Confirm Password" disabled>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <div class="d-flex justify-content-between">
     <h1 class="mb-4">User</h1>
@@ -146,10 +203,7 @@
             document.getElementById('pagination').innerHTML = html;
         }
 
-
-
         function loadUsers(page = 1, search = '') {
-            console.log('called');
 
             currentPage = page;
             currentSearch = search;
@@ -208,7 +262,12 @@
             return password === confirm_password && password.length > 0;
         }
 
-        document.getElementById('addUserForm').addEventListener('submit', function(e) {
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        document.getElementById('addUserForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
             const name = document.getElementById('name').value.trim();
@@ -240,7 +299,7 @@
                         password: password,
                         password_confirmation: confirm_password
                     })
-                    .then(function(response) {
+                    .then(function (response) {
                         Swal.fire({
                             title: 'Success!',
                             text: response.data.message || 'User added successfully.',
@@ -249,13 +308,13 @@
                             timer: 2000,
                             timerProgressBar: true,
                         });
+
                         loadUsers(1);
                         bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
                         document.getElementById('addUserForm').reset();
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         if (error.response && error.response.status === 422) {
-
                             const errors = error.response.data.errors;
                             let messages = '';
                             for (const field in errors) {
@@ -266,9 +325,7 @@
                                 title: 'Validation Error',
                                 text: messages,
                                 icon: 'warning'
-
                             });
-
                         } else {
                             Swal.fire({
                                 title: 'Error',
@@ -277,6 +334,120 @@
                             });
                         }
                     });
+                }
+            });
+        });
+
+        function toggleEditPasswordFields() {
+            const enabled = document.getElementById('enable-password').checked;
+            document.getElementById('edit-password').disabled = !enabled;
+            document.getElementById('edit-confirm_password').disabled = !enabled;
+            document.getElementById('show-edit-password').disabled = !enabled;
+
+            if (!enabled) {
+                document.getElementById('edit-password').value = '';
+                document.getElementById('edit-confirm_password').value = '';
+                document.getElementById('show-edit-password').checked = false;
+                document.getElementById('edit-password').type = 'password';
+            }
+        }
+
+        function editUser(id) {
+            axios.get(`/user/${id}`)
+                .then(response => {
+                    const user = response.data.data;
+
+                    document.getElementById('edit-id').value = user.id;
+                    document.getElementById('edit-name').value = user.name || '';
+                    document.getElementById('edit-username').value = user.username;
+
+                    const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error fetching user:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to fetch user details.',
+                    });
+                });
+        }
+
+        document.getElementById('editUserForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('edit-name').value.trim();
+            const username = document.getElementById('edit-username').value.trim();
+
+            const enablePassword = document.getElementById('enable-password').checked;
+            const password = document.getElementById('edit-password').value;
+            const confirm_password = document.getElementById('edit-confirm_password').value;
+
+            if (enablePassword && (password !== confirm_password || password.length === 0)) {
+                Swal.fire({
+                    title: 'Password Mismatch',
+                    text: 'Password and confirmation do not match or are empty.',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Confirm Update',
+                text: "Are you sure you want to update this user?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, update',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = {
+                        name: name,
+                        username: username
+                    };
+
+                    if (enablePassword) {
+                        formData.password = password;
+                        formData.password_confirmation = confirm_password;
+                    }
+
+                    axios.put(`/user/${id}`, formData)
+                        .then(function (response) {
+                            Swal.fire({
+                                title: 'Updated!',
+                                text: response.data.message || 'User updated successfully.',
+                                icon: 'success',
+                                showConfirmButton: false,
+                                timer: 2000,
+                                timerProgressBar: true,
+                            });
+
+                            loadUsers(currentPage);
+                            bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+                        })
+                        .catch(function (error) {
+                            if (error.response && error.response.status === 422) {
+                                const errors = error.response.data.errors;
+                                let messages = '';
+                                for (const field in errors) {
+                                    messages += `${errors[field].join(', ')}\n`;
+                                }
+
+                                Swal.fire({
+                                    title: 'Validation Error',
+                                    text: messages,
+                                    icon: 'warning'
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: error.response?.data?.message || 'Something went wrong.',
+                                    icon: 'error'
+                                });
+                            }
+                        });
                 }
             });
         });
@@ -325,6 +496,9 @@
         }
 
         window.loadUsers = loadUsers;
+        window.togglePassword = togglePassword;
+        window.editUser = editUser;
+        window.toggleEditPasswordFields = toggleEditPasswordFields;
         window.deleteUser = deleteUser;
     });
 

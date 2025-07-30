@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -54,8 +55,14 @@ class UserController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'User created successfully.',
-                'data' => $user
             ], 201);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors()
+            ], 422);
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -109,9 +116,24 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        try {
+            $user = User::findOrFail($id);
+
+            return response()->json([
+                'status' => 200,
+                'data' => $user,
+            ]);
+        } catch (Exception $e) {
+            Log::error("Error fetching user: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'status' => 404,
+                'message' => 'User not found'
+            ], 404);
+        }
     }
 
     /**
@@ -127,8 +149,44 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        try {
+            $user = User::findOrFail($id);
+
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+                'password' => 'nullable|string|min:6|confirmed',
+            ]);
+
+            $user->name = $validated['name'];
+            $user->username = $validated['username'];
+
+            if (!empty($validated['password'])) {
+                $user->password = Hash::make($validated['password']);
+            }
+
+            $user->save();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'User updated successfully.'
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'errors' => $e->errors()
+            ], 422);
+        } catch (Exception $e) {
+            Log::error("Failed to update user: " . $e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'An error occurred while updating the user.'
+            ], 500);
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.

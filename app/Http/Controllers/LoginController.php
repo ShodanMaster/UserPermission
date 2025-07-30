@@ -26,7 +26,7 @@ class LoginController extends Controller
             ];
 
             if(Auth::attempt($credentials, $request->rememberMe)){
-                return redirect()->route('dashboard');
+                return redirect()->route('dashboard')->with('success', 'Logged In Succesfully');
             }
             return redirect()->back()->with('warning', 'Wrong Credentials');
         }catch(Exception $e){
