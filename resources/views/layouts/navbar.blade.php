@@ -17,8 +17,8 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="">
-                    Expense
+                <a class="nav-link" href="{{ route('user.index') }}">
+                    User
                 </a>
             </li>
             <li class="nav-item">

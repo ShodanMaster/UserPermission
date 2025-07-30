@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('login', [LoginController::class, 'index'])->name('login');
@@ -9,6 +10,8 @@ Route::post('login-in', [LoginController::class, 'loginIn'])->name('loginin');
 
 Route::middleware('auth')->group(function(){
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::resource('user', UserController::class);
 
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
