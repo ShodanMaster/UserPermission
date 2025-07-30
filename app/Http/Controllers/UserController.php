@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -27,8 +32,45 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+
+            $user = User::create([
+                'name' => $validated['name'],
+                'username' => $validated['username'],
+                'password' => Hash::make($validated['password']),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User created successfully.',
+                'data' => $user
+            ], 201);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            dd($e);
+            Log::error('User creation failed: ' . $e->getMessage(), [
+                'stack' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to create user. Please try again later.'
+            ], 500);
+        }
     }
+
 
     /**
      * Display the specified resource.
