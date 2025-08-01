@@ -14,14 +14,17 @@ Route::post('login-in', [LoginController::class, 'loginIn'])->name('loginin');
 Route::middleware('auth')->group(function(){
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::resource('user', UserController::class);
-    Route::get('users', [UserController::class, 'getUsers']);
+    Route::middleware('is_permit')->group(function(){
 
-    Route::resource('category', CategoryController::class);
-    Route::resource('product', ProductController::class);
+        Route::resource('user', UserController::class);
 
-    Route::resource('permission', PermissionController::class);
+        Route::resource('category', CategoryController::class);
+        Route::resource('product', ProductController::class);
+
+        Route::resource('permission', PermissionController::class);
+    });
     Route::post('getPermissions', [PermissionController::class, 'getPermissions'])->name('getpermissions');
+    Route::post('users', [UserController::class, 'getUsers']);
 
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 

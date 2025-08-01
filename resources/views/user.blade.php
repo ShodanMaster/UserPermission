@@ -208,7 +208,7 @@
             currentPage = page;
             currentSearch = search;
 
-            axios.get(`/users?page=${page}&per_page=10&search=${encodeURIComponent(search)}`)
+            axios.post(`/users?page=${page}&per_page=10&search=${encodeURIComponent(search)}`)
                 .then(response => {
                     const res = response.data;
                     const tbody = document.getElementById('users-body');
