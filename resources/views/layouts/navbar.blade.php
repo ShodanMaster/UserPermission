@@ -1,6 +1,6 @@
 <nav class="navbar sticky-top navbar-dark bg-dark fixed-top">
   <div class="container-fluid">
-    <a class="navbar-brand" href="">User Permission</a>
+    <a class="navbar-brand" href="{{route('dashboard')}}">User Permission</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -11,21 +11,13 @@
       </div>
       <div class="offcanvas-body">
         <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-            <li class="nav-item">
-                <a class="nav-link " href="">
-                    Home
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('user.index') }}">
-                    User
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link " href="{{ route('permission.index')}}">
-                    Permission
-                </a>
-            </li>
+            @foreach ($routes as $route)
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs($route->route) ? 'active' : '' }}" href="{{ route($route->route) }}">
+                        {{ $route->title }}
+                    </a>
+                </li>
+            @endforeach
         </ul>
         <form action="{{route('logout')}}" class="d-flex mt-3" method="POST">
             @csrf

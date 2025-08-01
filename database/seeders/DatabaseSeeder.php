@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Route;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -20,6 +21,34 @@ class DatabaseSeeder extends Seeder
             'username' => 'admin',
             'password' => bcrypt('admin@123'),
         ]);
+
+        Route::create([
+            'title' => 'User',
+            'route' => 'user',
+            'order' => 1,
+        ]);
+
+        Route::create([
+            'title' => 'Category',
+            'route' => 'category',
+            'order' => 2,
+        ]);
+
+        Route::create([
+            'title' => 'Product',
+            'route' => 'product',
+            'order' => 3,
+        ]);
+
+        Route::create([
+            'title' => 'Permission',
+            'route' => 'permission',
+            'order' => 4,
+        ]);
+
+        $user = User::findOrFail(1);
+
+        $user->routes()->sync([1,2,3,4] ?? []);
 
         User::create([
             'name' => 'akshay1',
