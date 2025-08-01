@@ -21,6 +21,7 @@ Route::middleware('auth')->group(function(){
     Route::resource('product', ProductController::class);
 
     Route::resource('permission', PermissionController::class);
+    Route::post('getPermissions', [PermissionController::class, 'getPermissions'])->name('getpermissions');
 
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 

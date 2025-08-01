@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Route;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 
 class PermissionController extends Controller
@@ -16,6 +17,34 @@ class PermissionController extends Controller
         $users = User::select( 'id', 'name')->get();
         $routes = Route::select( 'id', 'title')->get();
         return view('permission', compact( 'users', 'routes'));
+    }
+
+    public function getPermissions(Request $request)
+    {
+        try {
+            $user = User::findOrFail($request->user_id);
+
+            $routeIds = $user->routes->pluck('id');
+
+            if ($routeIds->isNotEmpty()) {
+                return response()->json([
+                    'status' => 200,
+                    'permissions' => $routeIds
+                ]);
+            }
+
+            return response()->json([
+                'status' => 204,
+                'permissions' => []
+            ]);
+
+        } catch (Exception $e) {
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Something went wrong. Please try again.'
+            ], 500);
+        }
     }
 
     /**
@@ -31,8 +60,31 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'route_ids' => 'nullable|array',
+            'route_ids.*' => 'exists:routes,id'
+        ]);
+
+        try {
+            $user = User::findOrFail($validated['user_id']);
+
+            $user->routes()->sync($validated['route_ids'] ?? []);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Permissions successfully updated.'
+            ]);
+        } catch (Exception $e) {
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Something went wrong while saving permissions.'
+            ], 500);
+        }
     }
+
 
     /**
      * Display the specified resource.
