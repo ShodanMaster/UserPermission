@@ -23,8 +23,10 @@ Route::middleware('auth')->group(function(){
 
         Route::resource('permission', PermissionController::class);
     });
-    Route::post('getPermissions', [PermissionController::class, 'getPermissions'])->name('getpermissions');
-    Route::post('users', [UserController::class, 'getUsers']);
+
+    Route::post('{method}', function ($method) {
+		return App::call('\App\Http\Controllers\GetController@' . $method);
+	});
 
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 

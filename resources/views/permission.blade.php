@@ -26,7 +26,7 @@
             </div>
         </div>
         <div class="card-footer d-flex justify-content-end">
-            <button class="btn btn-dark" onclick="submit()">Grant</button>
+            <button class="btn btn-dark" onclick="submit()">Grand</button>
         </div>
     </div>
 @endsection
@@ -36,7 +36,7 @@
 
             let userId = document.getElementById('user').value;
 
-            axios.post('{{route('getpermissions')}}', {
+            axios.post('{{url('getPermissions')}}', {
                 user_id: userId
             })
             .then(function (response){

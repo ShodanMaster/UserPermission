@@ -19,34 +19,6 @@ class PermissionController extends Controller
         return view('permission', compact( 'users', 'routes'));
     }
 
-    public function getPermissions(Request $request)
-    {
-        try {
-            $user = User::findOrFail($request->user_id);
-
-            $routeIds = $user->routes->pluck('id');
-
-            if ($routeIds->isNotEmpty()) {
-                return response()->json([
-                    'status' => 200,
-                    'permissions' => $routeIds
-                ]);
-            }
-
-            return response()->json([
-                'status' => 204,
-                'permissions' => []
-            ]);
-
-        } catch (Exception $e) {
-
-            return response()->json([
-                'status' => 500,
-                'message' => 'Something went wrong. Please try again.'
-            ], 500);
-        }
-    }
-
     /**
      * Show the form for creating a new resource.
      */
@@ -60,7 +32,7 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
-        
+
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'route_ids' => 'nullable|array',
